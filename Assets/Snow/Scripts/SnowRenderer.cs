@@ -3,28 +3,38 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class SnowRenderer : MonoBehaviour {
-	public float height;
-	public float width;
+	//Plane size: default Unity's plane is (10,10), local scale should be considered
+	public Vector2 size = new Vector2 (10, 10);
+	//Collapse map resolution
 	public int resolution = 2048;
+	//The plane's maximum height and depth camera's view distance, if you are using this component for the snow on a terrain. Please transform this value to the maximum height difference of this terrain, this value should not be less than 1
 	public float planeHeight = 1;
+	//Collapsible object mask
 	public LayerMask mask;
+	//Height map's vertex displacement scale
+	public float vertexScale = 1;
+	//Height map's vertex offset
+	public float vertexOffset = 0;
+	//Height map
+	public Texture heightMap;
 	Camera cam;
 	Camera normalCam;
 	RenderTexture compare1Tex;		//Camera render target
-	RenderTexture compare2Tex;
 	RenderTexture targetTex;
 	RenderTexture normalTex;
-	Material postProcessMat;
+
 	int depthTexID;
 	int snowNormalID;
 	int worldPosID;
 	int compareID;
+	int vertexID;
+	int heightMapID;
 	Material snowMat;
 	void Awake () {
 		var camGo = new GameObject ("snow cam", typeof(Camera));
-		float aspect = width / height;
+		camGo.hideFlags = HideFlags.HideAndDontSave;
+		float aspect = size.x / size.y;
 		compare1Tex = new RenderTexture ((int)(resolution * aspect), resolution, 24, RenderTextureFormat.RFloat);
-		compare2Tex = new RenderTexture (compare1Tex.descriptor);
 		targetTex = new RenderTexture (compare1Tex.descriptor);
 		cam = camGo.GetComponent<Camera> ();
 		camGo.transform.position = transform.position - Vector3.up * planeHeight;
@@ -32,18 +42,19 @@ public class SnowRenderer : MonoBehaviour {
 		camGo.transform.SetParent (transform);
 		cam.renderingPath = RenderingPath.Forward;
 		cam.orthographic = true;
-		cam.orthographicSize = height / 2;
+		cam.orthographicSize = size.y / 2;
 		cam.aspect = aspect;
 		cam.targetTexture = compare1Tex;
+		cam.clearFlags = CameraClearFlags.Depth;
 		cam.enabled = false;
 		cam.cullingMask = mask;
-		cam.clearFlags = CameraClearFlags.Color;
 		cam.backgroundColor = Color.black;
 		cam.allowMSAA = false;
 		cam.useOcclusionCulling = false;
 		cam.farClipPlane = planeHeight * 2;
 		cam.allowHDR = false;
 		normalCam = (Instantiate (camGo, transform) as GameObject).GetComponent<Camera> ();
+		normalCam.gameObject.hideFlags = HideFlags.HideAndDontSave;
 		normalCam.CopyFrom (cam);
 		normalCam.clearFlags = CameraClearFlags.Depth;
 		normalTex = new RenderTexture ((int)(resolution * aspect), resolution, 24, RenderTextureFormat.ARGBFloat);
@@ -54,18 +65,21 @@ public class SnowRenderer : MonoBehaviour {
 		depthTexID = Shader.PropertyToID ("_SnowDepthTex");
 		snowNormalID = Shader.PropertyToID ("_SnowNormalTex");
 		worldPosID = Shader.PropertyToID ("_WorldYPos");
-		postProcessMat = new Material (Shader.Find ("Hidden/SnowRenderer"));
+		vertexID = Shader.PropertyToID ("_VertexInfo");
+		heightMapID = Shader.PropertyToID ("_PlaneHeightMap");
 		snowMat = GetComponent<Renderer> ().sharedMaterial;
 		snowMat.SetTexture (depthTexID, targetTex);
 		snowMat.SetTexture (snowNormalID, normalTex);
+		snowMat.SetTexture ("_HeightMap", heightMap);
+		snowMat.SetVector (vertexID, new Vector4 (vertexScale, vertexOffset));
 	}
-	void Update(){
-		Shader.SetGlobalFloat (worldPosID, transform.position.y);
-		Shader.SetGlobalTexture (compareID, compare2Tex);
+
+	void OnWillRenderObject(){
+		Shader.SetGlobalVector (worldPosID, new Vector4(vertexScale, vertexOffset, transform.position.y));
+		Shader.SetGlobalTexture (compareID, targetTex);
+		Shader.SetGlobalTexture (heightMapID, heightMap);
 		cam.Render ();
 		normalCam.Render ();
-		Graphics.Blit (compare1Tex, targetTex, postProcessMat);
-		Graphics.Blit (targetTex, compare2Tex);
-
+		Graphics.Blit (compare1Tex, targetTex);
 	}
 }

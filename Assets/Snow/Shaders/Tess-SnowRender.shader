@@ -14,8 +14,6 @@
 		_Occlusion("Occlusion Scale", Range(0,1)) = 1
 		_SpecularColor("Metallic",Range(0,1)) = 0.3
 		_EmissionColor("Emission Color", Color) = (0,0,0,1)
-		_VertexScale("Vertex Scale", Range(-3,3)) = 0.1
-		_VertexOffset("Vertex Offset", float) = 0
 		_DetailAlbedo("Detail Albedo Map", 2D) = "black"{}
 		_AlbedoBlend("Albedo Blend Rate", Range(0,1)) = 0.3
 		_DetailBump("Detail Bump Map", 2D) = "bump"{}
@@ -63,8 +61,7 @@ CGINCLUDE
 		float _Phong;
 		float _NormalScale;
 		float _Occlusion;
-		float _VertexScale;
-		float _VertexOffset;
+    float4 _VertexInfo;
 		sampler2D _DetailAlbedo;
 		float _AlbedoBlend;
 		sampler2D _DetailBump;
@@ -75,7 +72,7 @@ CGINCLUDE
 		sampler2D _BumpMap;
 		sampler2D _SpecularMap;
 		sampler2D _OcclusionMap;
-		
+		sampler2D _HeightMap;
 		sampler2D _MainTex;  
 		float _Glossiness;
 		fixed4 _Color;
@@ -158,7 +155,7 @@ inline InternalTessInterp_appdata_full tessvert_surf (appdata_full v) {
 sampler2D _SnowDepthTex;
 sampler2D _SnowNormalTex;
 inline void vert(inout appdata_full v){
-	v.vertex.xyz -= v.normal * ((tex2Dlod(_SnowDepthTex, float4(1 - v.texcoord.x, v.texcoord.y, v.texcoord.zw)).r) * _VertexScale +  _VertexOffset);
+	v.vertex.xyz -= float3(0, (tex2Dlod(_SnowDepthTex, float4(1 - v.texcoord.x, v.texcoord.y, v.texcoord.zw)).r - (tex2Dlod(_HeightMap, v.texcoord).r - _VertexInfo.y) * _VertexInfo.x), 0);
 }
 
 

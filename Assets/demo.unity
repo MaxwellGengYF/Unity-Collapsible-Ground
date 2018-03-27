@@ -13,7 +13,7 @@ OcclusionCullingSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 8
+  serializedVersion: 9
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
@@ -39,6 +39,7 @@ RenderSettings:
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
   m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_UseRadianceAmbientProbe: 0
 --- !u!157 &4
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -54,11 +55,10 @@ LightmapSettings:
     m_EnableBakedLightmaps: 1
     m_EnableRealtimeLightmaps: 0
   m_LightmapEditorSettings:
-    serializedVersion: 9
+    serializedVersion: 10
     m_Resolution: 2
     m_BakeResolution: 40
-    m_TextureWidth: 4096
-    m_TextureHeight: 1024
+    m_AtlasSize: 4096
     m_AO: 1
     m_AOMaxDistance: 1
     m_CompAOExponent: 1
@@ -293,6 +293,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 9a238e52bd7da454581d2cd70a12bd66, type: 2}
   m_StaticBatchInfo:
@@ -359,13 +360,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaa743eb0e71f554f8b11c4d61d5003a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  height: 10
-  width: 20
+  size: {x: 20, y: 10}
   resolution: 2048
   planeHeight: 1
   mask:
     serializedVersion: 2
     m_Bits: 16
+  vertexScale: 1
+  vertexOffset: 0
+  heightMap: {fileID: 0}
 --- !u!1 &2031863223
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,6 +411,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:

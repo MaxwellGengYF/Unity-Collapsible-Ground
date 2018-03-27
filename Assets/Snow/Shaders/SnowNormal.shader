@@ -15,8 +15,9 @@
 			#pragma vertex vert
 			#pragma fragment frag
 			#include "UnityCG.cginc"
-			float _WorldYPos;
+			float4 _WorldYPos;
 			sampler2D _CompareTex;
+			sampler2D _PlaneHeightMap;
 			struct appdata
 			{
 				float4 vertex : POSITION;
@@ -36,7 +37,7 @@
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
-				o.worldPos =  saturate(_WorldYPos - mul(unity_ObjectToWorld, v.vertex).y);
+				o.worldPos = mul(unity_ObjectToWorld, v.vertex).y;
 				o.screenPos = ComputeScreenPos(o.vertex);
 				o.normal = v.normal;
 				return o;
@@ -44,8 +45,9 @@
 			
 			float4 frag (v2f i) : SV_Target
 			{
-				float height = (tex2D(_CompareTex, i.screenPos)).r;
-				clip(i.worldPos - height);
+				float2 screenUV = i.screenPos.xy / i.screenPos.w;
+				float worldHeight = saturate(_WorldYPos.z + (tex2D(_PlaneHeightMap, screenUV).r - _WorldYPos.y) * _WorldYPos.x - i.worldPos);
+				clip(worldHeight - (tex2D(_CompareTex, screenUV)).r);
 				return float4(-i.normal * 0.5 + 0.5, 1);
 			}
 			ENDCG
