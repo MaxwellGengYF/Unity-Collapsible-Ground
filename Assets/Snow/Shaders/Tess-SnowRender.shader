@@ -40,7 +40,6 @@ CGINCLUDE
 #pragma shader_feature USE_OCCLUSION
 #pragma shader_feature USE_ALBEDO
 #pragma shader_feature USE_DETAILALBEDO
-#pragma shader_feature USE_FILTER
 #pragma shader_feature USE_DETAILNORMAL
 		struct Input {
 			float2 uv_MainTex;
@@ -158,6 +157,10 @@ inline void vert(inout appdata_full v){
 	v.vertex.xyz -= float3(0, (tex2Dlod(_SnowDepthTex, float4(1 - v.texcoord.x, v.texcoord.y, v.texcoord.zw)).r - (tex2Dlod(_HeightMap, v.texcoord).r - _VertexInfo.y) * _VertexInfo.x), 0);
 }
 
+inline void vert(inout appdata_base v){
+	v.vertex.xyz -= float3(0, (tex2Dlod(_SnowDepthTex, float4(1 - v.texcoord.x, v.texcoord.y, v.texcoord.zw)).r - (tex2Dlod(_HeightMap, v.texcoord).r - _VertexInfo.y) * _VertexInfo.x), 0);
+}
+
 
 inline float3 UnityCalcTriEdgeTessFactors (float3 triVertexFactors)
 {
@@ -190,19 +193,13 @@ inline float3 tessDist (float4 v0, float4 v1, float4 v2)
 inline UnityTessellationFactors hsconst_surf (InputPatch<InternalTessInterp_appdata_full,3> v) {
 
   UnityTessellationFactors o;
-  #if USE_FILTER
-  float3 tf = (tessDist(v[0].vertex, v[1].vertex, v[2].vertex) - 1);
-  o.edge[0] = tf.x * v[0].color.a + 1;
-  o.edge[1] = tf.y * v[1].color.a + 1;
-  o.edge[2] = tf.z * v[2].color.a + 1;
-  o.inside = (o.edge[0] + o.edge[1] + o.edge[2]) * 0.33333333;
-  #else
+
   float3 tf = (tessDist(v[0].vertex, v[1].vertex, v[2].vertex));
   o.edge[0] = tf.x;
   o.edge[1] = tf.y;
   o.edge[2] = tf.z;
   o.inside = (tf.x + tf.y + tf.z) * 0.33333333;
-  #endif
+
   return o;
 }
 
@@ -1007,17 +1004,16 @@ inline void frag_surf (v2f_surf IN,
 ENDCG
 
 }
-	Pass {
+Pass {
 		Name "ShadowCaster"
 		Tags { "LightMode" = "ShadowCaster" }
 		ZWrite On ZTest LEqual
 
 CGPROGRAM
-// compile directives
-#pragma vertex tessvert_surf_shadowCaster
+
+#pragma vertex vert_surf
 #pragma fragment frag_surf
-#pragma hull hs_surf
-#pragma domain ds_surf
+
 #pragma target 5.0
 
 #pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
@@ -1038,54 +1034,19 @@ CGPROGRAM
 
 struct v2f_surf {
   V2F_SHADOW_CASTER;
-
-
 };
 
 // vertex shader
-inline v2f_surf vert_surf (appdata_full v) {
+inline v2f_surf vert_surf (appdata_base v) {
   v2f_surf o;
   UNITY_INITIALIZE_OUTPUT(v2f_surf,o);
   TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
   return o;
 }
 
-inline InternalTessInterp_appdata_full tessvert_surf_shadowCaster (appdata_full v) {
-  InternalTessInterp_appdata_full o;
-  o.vertex = v.vertex;
-  o.normal = v.normal;
-  o.texcoord = v.texcoord;
-  return o;
-}
-
-[UNITY_domain("tri")]
-inline v2f_surf ds_surf (UnityTessellationFactors tessFactors, const OutputPatch<InternalTessInterp_appdata_full,3> vi, float3 bary : SV_DomainLocation) {
-  appdata_full v;
-  v.vertex = vi[0].vertex*bary.x + vi[1].vertex*bary.y + vi[2].vertex*bary.z;
-    #if USE_PHONG
-  float3 pp[3];
-  pp[0] = v.vertex.xyz - vi[0].normal * (dot(v.vertex.xyz, vi[0].normal) - dot(vi[0].vertex.xyz, vi[0].normal));
-  pp[1] = v.vertex.xyz - vi[1].normal * (dot(v.vertex.xyz, vi[1].normal) - dot(vi[1].vertex.xyz, vi[1].normal));
-  pp[2] = v.vertex.xyz - vi[2].normal * (dot(v.vertex.xyz, vi[2].normal) - dot(vi[2].vertex.xyz, vi[2].normal));
-  v.vertex.xyz = _Phong * (pp[0]*bary.x + pp[1]*bary.y + pp[2]*bary.z) + (1.0f-_Phong) * v.vertex.xyz;
-  #endif
-  v.tangent = 0;
-  v.normal = vi[0].normal*bary.x + vi[1].normal*bary.y + vi[2].normal*bary.z;
-  v.texcoord = vi[0].texcoord*bary.x + vi[1].texcoord*bary.y + vi[2].texcoord*bary.z;
-  v.texcoord1 = 0;
-  v.texcoord2 = 0;
-  v.texcoord3 = 0;
-  v.color = 0;
-
-  vert(v);
-
-  v2f_surf o = vert_surf (v);
-  return o;
-}
-
 // fragment shader
-inline fixed4 frag_surf (v2f_surf IN) : SV_Target {
- 	return 1;
+inline float4 frag_surf (v2f_surf IN) : SV_Target {
+ 	SHADOW_CASTER_FRAGMENT(IN)
 }
 
 
