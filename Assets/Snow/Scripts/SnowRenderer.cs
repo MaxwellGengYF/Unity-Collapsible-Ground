@@ -14,7 +14,7 @@ public class SnowRenderer : MonoBehaviour {
 	//Height map's vertex displacement scale
 	public float vertexScale = 1;
 	//Height map's vertex offset
-	public float vertexOffset = 0;
+	public float vertexOffset = 0.5f;
 	//Height map
 	public Texture heightMap;
 	Camera cam;
@@ -29,7 +29,6 @@ public class SnowRenderer : MonoBehaviour {
 	int compareID;
 	int vertexID;
 	int heightMapID;
-	Material snowMat;
 	void Awake () {
 		var camGo = new GameObject ("snow cam", typeof(Camera));
 		camGo.hideFlags = HideFlags.HideAndDontSave;
@@ -67,11 +66,20 @@ public class SnowRenderer : MonoBehaviour {
 		worldPosID = Shader.PropertyToID ("_WorldYPos");
 		vertexID = Shader.PropertyToID ("_VertexInfo");
 		heightMapID = Shader.PropertyToID ("_PlaneHeightMap");
-		snowMat = GetComponent<Renderer> ().sharedMaterial;
-		snowMat.SetTexture (depthTexID, targetTex);
-		snowMat.SetTexture (snowNormalID, normalTex);
-		snowMat.SetTexture ("_HeightMap", heightMap);
-		snowMat.SetVector (vertexID, new Vector4 (vertexScale, vertexOffset));
+		var rd = GetComponent<Renderer> ();
+		MaterialPropertyBlock block = new MaterialPropertyBlock ();
+		block.SetTexture (depthTexID, targetTex);
+		block.SetTexture (snowNormalID, normalTex);
+		if (heightMap) {
+			block.SetTexture ("_HeightMap", heightMap);
+			block.SetVector (vertexID, new Vector4 (vertexScale, vertexOffset));
+
+		} else {
+			vertexScale = 0;
+			vertexOffset = 0;
+			block.SetVector (vertexID, new Vector4 (vertexScale, vertexOffset));
+		}
+		rd.SetPropertyBlock (block);
 	}
 
 	void OnWillRenderObject(){

@@ -154,13 +154,12 @@ inline InternalTessInterp_appdata_full tessvert_surf (appdata_full v) {
 sampler2D _SnowDepthTex;
 sampler2D _SnowNormalTex;
 inline void vert(inout appdata_full v){
-	v.vertex.xyz -= float3(0, (tex2Dlod(_SnowDepthTex, float4(1 - v.texcoord.x, v.texcoord.y, v.texcoord.zw)).r - (tex2Dlod(_HeightMap, v.texcoord).r - _VertexInfo.y) * _VertexInfo.x), 0);
+	v.vertex.xyz -= float3(0, (tex2Dlod(_SnowDepthTex, float4(1 - v.texcoord.x, v.texcoord.y, v.texcoord.zw)).r * 2 + (tex2Dlod(_HeightMap, v.texcoord).r - _VertexInfo.y) * _VertexInfo.x), 0);
 }
 
 inline void vert(inout appdata_base v){
-	v.vertex.xyz -= float3(0, (tex2Dlod(_SnowDepthTex, float4(1 - v.texcoord.x, v.texcoord.y, v.texcoord.zw)).r - (tex2Dlod(_HeightMap, v.texcoord).r - _VertexInfo.y) * _VertexInfo.x), 0);
+	v.vertex.xyz -= float3(0, (tex2Dlod(_SnowDepthTex, float4(1 - v.texcoord.x, v.texcoord.y, v.texcoord.zw)).r * 2 + (tex2Dlod(_HeightMap, v.texcoord).r - _VertexInfo.y) * _VertexInfo.x), 0);
 }
-
 
 inline float3 UnityCalcTriEdgeTessFactors (float3 triVertexFactors)
 {
@@ -996,57 +995,6 @@ inline void frag_surf (v2f_surf IN,
   #ifndef UNITY_HDR_ON
   outEmission.rgb = exp2(-outEmission.rgb);
   #endif
-}
-
-
-#endif
-
-ENDCG
-
-}
-Pass {
-		Name "ShadowCaster"
-		Tags { "LightMode" = "ShadowCaster" }
-		ZWrite On ZTest LEqual
-
-CGPROGRAM
-
-#pragma vertex vert_surf
-#pragma fragment frag_surf
-
-#pragma target 5.0
-
-#pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
-#pragma multi_compile_shadowcaster
-
-// -------- variant for: <when no other keywords are defined>
-#if !defined(INSTANCING_ON)
-#define UNITY_PASS_SHADOWCASTER
-
-#define INTERNAL_DATA
-#define WorldReflectionVector(data,normal) data.worldRefl
-#define WorldNormalVector(data,normal) normal
-
-// Original surface shader snippet:
-#line 10 ""
-#ifdef DUMMY_PREPROCESSOR_TO_WORK_AROUND_HLSL_COMPILER_LINE_HANDLING
-#endif
-
-struct v2f_surf {
-  V2F_SHADOW_CASTER;
-};
-
-// vertex shader
-inline v2f_surf vert_surf (appdata_base v) {
-  v2f_surf o;
-  UNITY_INITIALIZE_OUTPUT(v2f_surf,o);
-  TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
-  return o;
-}
-
-// fragment shader
-inline float4 frag_surf (v2f_surf IN) : SV_Target {
- 	SHADOW_CASTER_FRAGMENT(IN)
 }
 
 

@@ -57,11 +57,11 @@
      <None Include="Assets\Snow\Shaders\SnowNormal.shader" />
      <None Include="Assets\Snow\Shaders\Tess-SnowRender.shader" />
      <None Include="Assets\Snow\Shaders\SnowRenderer.shader" />
- <Reference Include="Unity.PackageManagerUI.Editor">
- <HintPath>D:/Unity-Collapsible-Ground/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
- </Reference>
  <Reference Include="UnityEditor.StandardEvents">
  <HintPath>D:/Unity-Collapsible-Ground/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
+ </Reference>
+ <Reference Include="Unity.PackageManagerUI.Editor">
+ <HintPath>D:/Unity-Collapsible-Ground/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.AIModule">
  <HintPath>C:/Program Files/Unity 2018.1.0b12/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>

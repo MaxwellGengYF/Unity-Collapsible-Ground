@@ -44,7 +44,8 @@
 			float frag (v2f i) : SV_Target
 			{
 				float2 screenUV = i.screenPos.xy / i.screenPos.w;
-				float worldHeight = saturate(_WorldYPos.z + (tex2D(_PlaneHeightMap, screenUV).r - _WorldYPos.y) * _WorldYPos.x - i.worldPos);
+				float worldHeight = (_WorldYPos.z - (tex2D(_PlaneHeightMap, float2(1-screenUV.x,screenUV.y)).r - _WorldYPos.y) * _WorldYPos.x - i.worldPos);
+				worldHeight = saturate(worldHeight * 0.5);
 				clip(worldHeight - tex2D(_CompareTex, screenUV).r);
 				return worldHeight;
 			}

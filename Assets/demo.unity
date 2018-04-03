@@ -361,14 +361,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   size: {x: 20, y: 10}
-  resolution: 2048
+  resolution: 1024
   planeHeight: 1
   mask:
     serializedVersion: 2
     m_Bits: 16
-  vertexScale: 1
+  vertexScale: 0
   vertexOffset: 0
-  heightMap: {fileID: 0}
+  heightMap: {fileID: 2800000, guid: 9eb833289b50fa14a807eae4423f8690, type: 3}
 --- !u!1 &2031863223
 GameObject:
   m_ObjectHideFlags: 0
@@ -447,7 +447,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2031863223}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.831719, y: -0.12104511, z: -2.3920422}
+  m_LocalPosition: {x: -11.73, y: 0.69, z: -2.3920422}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
